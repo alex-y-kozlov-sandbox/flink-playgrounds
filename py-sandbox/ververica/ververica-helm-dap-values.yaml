@@ -1,0 +1,136 @@
+acceptCommunityEditionLicense: true
+vvp:
+  registry: registry.ververica.com/v2.6
+  ## Authentication configuration.
+  auth:
+    ## When disabled, all users are unauthenticated and have administrator privileges. Not
+    ## recommended for production deployments.
+    enabled: true
+
+    ## A list of users and groups that have administrator privileges.
+    ## - `user:user@example.com` matches the user `user@example.com`
+    ## - `group:vvp-admins` matches users in the OIDC-supplied group `vvp-admins`
+    ## - `system:authenticated` matches all authenticated users
+    admins:
+    - ykozlov:ykozlov@gmail.com
+
+    ## An optional, statically-defined API token with administrator privileges for bootstrapping
+    ## Ververica Platform.
+    ##
+    ## This token can be used, for example, to create an initial Namespace and assign its members.
+    ## It is recommended to unset this token after bootstrapping.
+    bootstrapToken:
+      token: dmVydmVyaWNhLmNvbS9jYXJlZXJz
+
+  ## Platform metadata persistence configuration.
+  ##
+  ## This section configures how Ververica Platform stores metadata such as Deployments and
+  ## Namespace information.
+  ##
+  ## Note: `vvp.persistence.type` is a required setting.
+  persistence:
+    ## REQUIRED: The type of persistence to use. Must be one of:
+    ## * jdbc: store data in the database configured in the `datasource` section below
+    ##   * Supported JDBC drivers: `sqlite`, `postgresql`, `mysql`
+    ## * local: a preset for JDBC storage using SQLite on a local volume (required for Community
+    ##   edition)
+    type: "local"
+
+  blobStorage: {}
+    ## The base URI for universal blob storage.
+    ##
+    ## If unset, universal blob storage is disabled. If credentials are required, add them to the
+    ## "Blob storage credentials" section below.
+    #baseUri: ""
+
+    ## Additional config options for supported blob storage providers.
+    #s3:
+    #  endpoint: ""
+    #  region: ""
+    #oss:
+    #  endpoint: ""
+
+##
+## Blob storage credentials
+##
+blobStorageCredentials:
+#  ## Use an existing Kubernetes secret instead of providing credentials in this file. The keys
+#  ## within the secret must follow the format: `<provider>.<credential>`
+#  ##
+#  ## For example: `s3.accessKeyId` or `azure.connectionString`
+#  existingSecret: ""
+#
+#  azure:
+#    connectionString: ""
+#  s3:
+#    accessKeyId: ""
+#    secretAccessKey: ""
+#  oss:
+#    accessKeyId: ""
+#    accessKeySecret: ""
+#  hdfs:
+#    core-site.xml: ""
+#    hdfs-site.xml: ""
+#    krb5.conf: ""
+#    keytab: ""
+#    keytab-principal: ""
+
+##
+## Container configuration for the application manager component
+##
+appmanager:
+  image:
+    ## Defaults to the registry specified under `vvp.registry` plus "/vvp-appmanager".
+    #repository:
+    pullPolicy: Always
+
+##
+## Container configuration for the gateway component
+##
+gateway:
+  image:
+    ## Defaults to the registry specified under `vvp.registry` plus "/vvp-gateway".
+    #repository:
+    pullPolicy: IfNotPresent
+
+##
+## Container configuration for the ui component
+##
+ui:
+  image:
+    ## Defaults to the registry specified under `vvp.registry` plus "/vvp-ui".
+    #repository:
+    pullPolicy: IfNotPresent
+
+##
+## Kubernetes Service configuration
+##
+service:
+  type: ClusterIP
+  externalPort: 80
+  targetPort: 8080
+  labels: {}
+  annotations: {}
+
+##
+## Kubernetes PersistentVolume configuration
+##
+persistentVolume:
+  enabled: true
+  # These must match the accessModes of the existing PVC or dynamic provisioner
+  # Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  accessModes:
+  - ReadWriteOnce
+  # PVC annotations
+  annotations: {}
+  # Use an existing PVC
+  #existingClaim: ""
+  size: 8Gi
+  # PV storage class
+  # If defined, storageClassName: <storageClass>
+  # If undefined (the default) or set to null, no storageClassName spec is
+  #   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  #   GKE, AWS & OpenStack)
+  storageClass: default
+  # Subdirectory of the PersistentVolume to use
+  subPath: ""
