@@ -46,11 +46,11 @@ helm show values ververica/ververica-platform  >> ververica-helm-default-values.
 helm template -n ververica ververica/ververica-platform --set acceptCommunityEditionLicense=true >> ververica-helm-tmpl.yaml
 
 # Get helm output using template command:
-helm template -n ververica ververica/ververica-platform -f ververica-helm-dap-values.yaml >> ververica-helm-dap-tmpl.yaml
+helm template dap -n ververica ververica/ververica-platform -f ververica-helm-dap-values.yaml >> ververica-helm-dap-tmpl.yaml
 
 # install release daplatform into ververica NS
 kubectl create namespace ververica
-helm install daplatform -n ververica ververica/ververica-platform --set acceptCommunityEditionLicense=true
+helm install dap -n ververica  -f ververica-helm-dap-values.yaml ververica/ververica-platform
 
 # portforward to service/vvp-ververica-platform:80
 kubectl port-forward -n ververica service/vvp-ververica-platform 8080:80

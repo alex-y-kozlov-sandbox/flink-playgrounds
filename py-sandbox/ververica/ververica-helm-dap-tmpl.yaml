@@ -3,19 +3,19 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: RELEASE-NAME-ververica-platform
+  name: dap-ververica-platform
   labels:
 ---
 # Source: ververica-platform/templates/secret.yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: RELEASE-NAME-ververica-platform
+  name: dap-ververica-platform
   labels:
     chart: "ververica-platform-5.2.2"
     component: ververica-platform
     heritage: "Helm"
-    release: "RELEASE-NAME"
+    release: "dap"
     system: ververica-platform
 type: Opaque
 data:
@@ -25,12 +25,12 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: RELEASE-NAME-ververica-platform-config
+  name: dap-ververica-platform-config
   labels:
     chart: "ververica-platform-5.2.2"
     component: ververica-platform
     heritage: "Helm"
-    release: "RELEASE-NAME"
+    release: "dap"
     system: ververica-platform
 data:
   application-prod-user.yaml: |
@@ -110,13 +110,13 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-  name: RELEASE-NAME-ververica-platform
+  name: dap-ververica-platform
   labels:
-    app: RELEASE-NAME-ververica-platform
+    app: dap-ververica-platform
     chart: "ververica-platform-5.2.2"
     component: ververica-platform
     heritage: "Helm"
-    release: "RELEASE-NAME"
+    release: "dap"
     system: ververica-platform
 spec:
   storageClassName: "default"
@@ -130,7 +130,7 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: RELEASE-NAME-ververica-platform
+  name: dap-ververica-platform
   labels:
 rules:
 - apiGroups: ["apps", "extensions"]
@@ -150,27 +150,27 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: RELEASE-NAME-ververica-platform
+  name: dap-ververica-platform
   labels:
 subjects:
 - kind: ServiceAccount
-  name: RELEASE-NAME-ververica-platform
+  name: dap-ververica-platform
 roleRef:
   kind: Role
-  name: RELEASE-NAME-ververica-platform
+  name: dap-ververica-platform
   apiGroup: rbac.authorization.k8s.io
 ---
 # Source: ververica-platform/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: RELEASE-NAME-ververica-platform
+  name: dap-ververica-platform
   labels:
-    app: RELEASE-NAME-ververica-platform
+    app: dap-ververica-platform
     chart: "ververica-platform-5.2.2"
     component: ververica-platform
     heritage: "Helm"
-    release: "RELEASE-NAME"
+    release: "dap"
     system: ververica-platform
   annotations:
 spec:
@@ -181,43 +181,43 @@ spec:
     protocol: TCP
     targetPort: 8080
   selector:
-    app: RELEASE-NAME-ververica-platform
+    app: dap-ververica-platform
     component: ververica-platform
 ---
 # Source: ververica-platform/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: RELEASE-NAME-ververica-platform
+  name: dap-ververica-platform
   labels:
-    app: RELEASE-NAME-ververica-platform
+    app: dap-ververica-platform
     chart: "ververica-platform-5.2.2"
     component: ververica-platform
     heritage: "Helm"
-    release: "RELEASE-NAME"
+    release: "dap"
     system: ververica-platform
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: RELEASE-NAME-ververica-platform
+      app: dap-ververica-platform
       component: ververica-platform
-      release: "RELEASE-NAME"
+      release: "dap"
       system: ververica-platform
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: RELEASE-NAME-ververica-platform
+        app: dap-ververica-platform
         component: ververica-platform
-        release: "RELEASE-NAME"
+        release: "dap"
         system: ververica-platform
       annotations:
-        checksum/config: d354f7487e235c5843782fdb72614902e10a07587f21db6b566e7c70d233b36d
+        checksum/config: 2aff952753dda835b45188d65f3dbbd5d9f4a68dd96abe1e481bfad5923c82c9
         checksum/blobstoragesecret: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     spec:
-      serviceAccountName: RELEASE-NAME-ververica-platform
+      serviceAccountName: dap-ververica-platform
       securityContext:
         
         fsGroup: 999
@@ -276,7 +276,7 @@ spec:
           - name: vvp.auth.bootstrap-token.token
             valueFrom:
               secretKeyRef:
-                name: RELEASE-NAME-ververica-platform
+                name: dap-ververica-platform
                 key: bootstrapToken
           ports:
           - name: http
@@ -337,9 +337,9 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: RELEASE-NAME-ververica-platform-config
+            name: dap-ververica-platform-config
         - name: blob-storage-creds
           emptyDir: {}
         - name: data
           persistentVolumeClaim:
-            claimName: RELEASE-NAME-ververica-platform
+            claimName: dap-ververica-platform
