@@ -15,7 +15,7 @@
 #  See the License for the specific language governing permissions and
 # limitations under the License.
 ################################################################################
-
+import os
 import random
 import time, calendar
 from random import randint
@@ -24,6 +24,10 @@ from kafka import errors
 from json import dumps
 from time import sleep
 
+bootstrap_server = os.environ.get('BOOTSTRAP_SERVER',"bootstrap.kafka.20.42.24.68.nip.io:443")
+security_protocol = os.environ.get('SSL',"SSL")
+if "SSL" == security_protocol:
+  ssl_cafile = os.environ.get('SSL_CAFILE',"../../py-sandbox/secrets/kafka-ca.crt")
 
 def write_data(producer):
     data_cnt = 20000
@@ -46,8 +50,10 @@ def create_producer():
     print("Connecting to Kafka brokers")
     for i in range(0, 6):
         try:
-            producer = KafkaProducer(bootstrap_servers=['kafka:9092'],
-                            value_serializer=lambda x: dumps(x).encode('utf-8'))
+            producer = KafkaProducer(bootstrap_servers=[bootstrap_server],
+                                    security_protocol=security_protocol,
+                                    ssl_cafile=ssl_cafile,
+                                    value_serializer=lambda x: dumps(x).encode('utf-8'))
             print("Connected to Kafka")
             return producer
         except errors.NoBrokersAvailable:

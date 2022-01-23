@@ -3,13 +3,14 @@ from json import dumps
 from kafka import KafkaProducer
 import os
 
+print( os.getcwd() )
 event_count = os.environ.get('EVENT_COUNT',10)
 sleep_seconds = os.environ.get('SLEEP_SECONDS',1)
 topic = os.environ.get('TOPIC',"topic1")
 bootstrap_server = os.environ.get('BOOTSTRAP_SERVER',"bootstrap.kafka.20.42.24.68.nip.io:443")
 security_protocol = os.environ.get('SSL',"SSL")
 if "SSL" == security_protocol:
-  ssl_cafile = os.environ.get('SSL_CAFILE',"/Users/kozlova/program/repos/kb-docs/kafka/artifacts/kafka-ca.crt")
+  ssl_cafile = os.environ.get('SSL_CAFILE',"../secrets/kafka-ca.crt")
 
 #sasl_mechanism = "PLAIN"
 #username = "username"
