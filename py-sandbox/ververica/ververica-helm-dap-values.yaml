@@ -82,7 +82,7 @@ appmanager:
   image:
     ## Defaults to the registry specified under `vvp.registry` plus "/vvp-appmanager".
     #repository:
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
 ##
 ## Container configuration for the gateway component
