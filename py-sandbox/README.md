@@ -16,7 +16,7 @@ python table-api.py
 docker run --mount type=bind,src=/host/path/to/custom/conf,target=/opt/flink/conf flink:1.14.3-scala_2.11 <jobmanager|standalone-job|taskmanager>
 ```
 
-# Ververica - apache Flink commercial platform
+# Ververica - apache Flink commercial K8S platform
 Community edition is free. 
 [Community Limitations](https://www.ververica.com/pricing-editions):
 - No support
@@ -26,11 +26,70 @@ Community edition is free.
 - No API Tokens
 - Local only platform state storage
 
-## Deploy ververica on K8S - helm chart
+## Deployment Architecture
+Is as follows:
+- vvp namespace: 
+  - control plane - vervetica/flink components
+  - minio as an UBS/S3
+- vvp-jobs: 
+  - workload (Apache Flink jobs)
+
+## Get started guide/tutorial
+- [Getting Started docs](https://docs.ververica.com/getting_started/index.html)
+- [Getting Started GH: Fork](https://github.com/alex-y-kozlov-sandbox/ververica-platform-playground)
+
+### Install Promi and Elk for logging
+**Check out custom fluend chart: https://kokuwaio.github.io/helm-charts**
+
+```sh
+install_prometheus_operator() {
+  helm_install prometheus-operator kube-prometheus-stack "$VVP_NAMESPACE" \
+    --repo https://prometheus-community.github.io/helm-charts \
+    --values values-prometheus-operator.yaml \
+    --set prometheusOperator.namespaces.additional="{$JOBS_NAMESPACE}" \
+
+  kubectl --namespace "$JOBS_NAMESPACE" apply -f prometheus-operator-resources/service-monitor.yaml
+}
+install_grafana() {
+  helm_install grafana grafana "$VVP_NAMESPACE" \
+    --repo https://grafana.github.io/helm-charts \
+    --values values-grafana.yaml \
+    --set-file dashboards.default.flink-dashboard.json=grafana-dashboard.json
+}
+install_elasticsearch() {
+  helm_install elasticsearch elasticsearch "$VVP_NAMESPACE" \
+    --repo https://helm.elastic.co \
+    --values values-elasticsearch.yaml
+}
+install_fluentd() {
+  helm_install fluentd fluentd-elasticsearch "$VVP_NAMESPACE" \
+    --repo https://kokuwaio.github.io/helm-charts \
+    --values values-fluentd.yaml
+}
+install_kibana() {
+  helm_install kibana kibana "$VVP_NAMESPACE" \
+    --repo https://helm.elastic.co \
+    --values values-kibana.yaml
+}
+```
+## Deployment
+1. namespace 
+```
+kubectl create namespace vvp; 
+kubectl create namespace vvp-jobs
+```
+### 2. Deploy Minio
+```sh
+helm repo add stable https://charts.helm.sh/stable
+helm repo update
+helm upgrade --install minio -n vvp --repo https://helm.min.io -f https://raw.githubusercontent.com/alex-y-kozlov-sandbox/ververica-platform-playground/release-2.6/values-minio.yaml minio
+
+```
+### 3. Deploy ververica on K8S - helm chart
 - [docker images docs](https://docs.ververica.com/v1.3/platform/installation/images.html)
 - [helm chart docs]()
 
-- [HOw to provate registry on K8s](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account)
+- [How to private registry on K8s](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account)
 
 Docker registry: registry.platform.data-artisans.net
 Require ` default ` StorageClass defined
@@ -43,16 +102,53 @@ helm repo add ververica https://charts.ververica.com
 helm show values ververica/ververica-platform  >> ververica-helm-default-values.yaml
 
 # Get helm output using template command:
-helm template -n ververica ververica/ververica-platform --set acceptCommunityEditionLicense=true >> ververica-helm-tmpl.yaml
+helm template -n vvp ververica/ververica-platform --set acceptCommunityEditionLicense=true >> ververica-helm-tmpl.yaml
 
 # Get helm output using template command:
-helm template dap -n ververica ververica/ververica-platform -f ververica-helm-dap-values.yaml >> ververica-helm-dap-tmpl.yaml
+helm template dap -n vvp ververica/ververica-platform -f ververica-helm-dap-values.yaml >> ververica-helm-dap-tmpl.yaml
 
 # install release daplatform into ververica NS
-kubectl create namespace ververica
-helm install dap -n ververica  -f ververica-helm-dap-values.yaml ververica/ververica-platform
+helm upgrade --install dap -n vvp -f ververica-helm-dap-values.BROKEN.yaml ververica/ververica-platform
+helm get values dap -n vvp 
+
+helm delete dap -n vvp
 
 # portforward to service/vvp-ververica-platform:80
-kubectl port-forward -n ververica service/vvp-ververica-platform 8080:80
+kubectl port-forward -n vvp service/vvp-ververica-platform 8080:80
 curl http://.../api/v1/namespaces/defaults/deployments -H "Accept: application/yaml"
 ```
+
+==============
+appmanager
+    volumeMounts:                                                 
+    - mountPath: /vvp/etc                                         
+      name: config                                                
+      readOnly: true                                              
+    - mountPath: /vvp/secrets/blob-storage-creds                  
+      name: blob-storage-creds                                    
+      readOnly: true                                              
+    - mountPath: /vvp/data                                        
+      name: data                                                  
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount    
+      name: dap-ververica-platform-token-gg9bh                    
+      readOnly: true   
+    
+gateway
+    volumeMounts:                                                 
+    - mountPath: /vvp/etc                                         
+      name: config                                                
+      readOnly: true                                              
+    - mountPath: /vvp/secrets/blob-storage-creds                  
+      name: blob-storage-creds                                    
+      readOnly: true                                              
+    - mountPath: /vvp/data                                        
+      name: data                                                  
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount    
+      name: dap-ververica-platform-token-gg9bh                    
+      readOnly: true     
+    
+ui
+    volumeMounts:                                                  
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount    
+      name: dap-ververica-platform-token-gg9bh                    
+      readOnly: true 

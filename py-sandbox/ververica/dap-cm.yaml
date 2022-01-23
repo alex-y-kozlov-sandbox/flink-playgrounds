@@ -1,0 +1,115 @@
+apiVersion: v1
+data:
+  application-prod-user.yaml: |
+    spring:
+      datasource:
+        hikari:
+          maximum-pool-size: 1
+        url: jdbc:sqlite:/vvp/data/vvp.db?journal_mode=WAL&synchronous=FULL&busy_timeout=10000
+    vvp:
+      appmanager:
+        cluster:
+          kubernetes.artifact-fetcher.image-registry: registry.ververica.com/v2.6
+          kubernetes.artifact-fetcher.image-repository: vvp-artifact-fetcher
+          kubernetes.artifact-fetcher.image-tag: 2.6.2
+      auth:
+        enabled: false
+      blobStorage:
+        baseUri: s3://vvp
+        s3:
+          endpoint: http://minio.vvp.svc:9000
+      flinkDeploymentDefaults:
+        registry: registry.ververica.com/v2.6
+        repository: flink
+      flinkVersionMetadata:
+      - defaultFor:
+        - 1.12
+        - 1.12.7
+        flinkVersion: 1.12.7
+        imageTag: 1.12.7-stream2-scala_2.12-java8
+        labels:
+          java: 8
+          scalaVersion: 2.12
+      - flinkVersion: 1.12.7
+        imageTag: 1.12.7-stream2-scala_2.12-java11
+        labels:
+          java: 11
+          scalaVersion: 2.12
+      - defaultFor:
+        - 1.13
+        - 1.13.5
+        flinkVersion: 1.13.5
+        imageTag: 1.13.5-stream2-scala_2.12-java8
+        labels:
+          java: 8
+          scalaVersion: 2.12
+      - flinkVersion: 1.13.5
+        imageTag: 1.13.5-stream2-scala_2.12-java11
+        labels:
+          java: 11
+          scalaVersion: 2.12
+      - defaultFor:
+        - 1.14
+        - 1.14.3
+        flinkVersion: 1.14.3
+        imageTag: 1.14.3-stream1-scala_2.12-java8
+        labels:
+          java: 8
+          scalaVersion: 2.12
+        useForSqlDeployments: true
+      - flinkVersion: 1.14.3
+        imageTag: 1.14.3-stream1-scala_2.12-java11
+        labels:
+          java: 11
+          scalaVersion: 2.12
+      globalDeploymentDefaults: |
+        spec:
+          state: RUNNING
+          template:
+            spec:
+              resources:
+                jobmanager:
+                  cpu: 0.5
+                  memory: 1G
+                taskmanager:
+                  cpu: 0.5
+                  memory: 1G
+              flinkConfiguration:
+                state.backend: filesystem
+                taskmanager.memory.managed.fraction: 0.0 # no managed memory needed for filesystem statebackend
+                high-availability: vvp-kubernetes
+                metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
+                execution.checkpointing.interval: 10s
+                execution.checkpointing.externalized-checkpoint-retention: RETAIN_ON_CANCELLATION
+      license:
+        acceptCommunityEditionLicense: true
+      persistence:
+        type: local
+      platformKubernetesNamespace: vvp
+      registry: registry.ververica.com/v2.6
+      resultFetcher:
+        registry: registry.ververica.com/v2.6
+        repository: vvp-result-fetcher-service
+        tag: 2.6.2
+      sqlService:
+        pool:
+          coreSize: 1
+          maxSize: 1
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: dap
+    meta.helm.sh/release-namespace: vvp
+  creationTimestamp: "2022-01-23T17:09:35Z"
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    chart: ververica-platform-5.2.2
+    component: ververica-platform
+    heritage: Helm
+    release: dap
+    system: ververica-platform
+  name: dap-ververica-platform-config
+  namespace: vvp
+  resourceVersion: "70871961"
+  selfLink: /api/v1/namespaces/vvp/configmaps/dap-ververica-platform-config
+  uid: 46382885-d933-413f-955b-72f777f6bff6

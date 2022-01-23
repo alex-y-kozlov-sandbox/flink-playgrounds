@@ -5,14 +5,13 @@ metadata:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   name: daplatform-ververica-platform
-  namespace: ververica
 spec:
   rules:
   - host: ververica.20.42.24.68.nip.io
     http:
       paths:
       - backend:
-          serviceName: daplatform-ververica-platform
+          serviceName: dap-ververica-platform
           servicePort: 80
         path: /
         pathType: ImplementationSpecific
