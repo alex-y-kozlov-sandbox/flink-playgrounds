@@ -27,6 +27,7 @@ Community edition is free.
 - Local only platform state storage
 
 ## Deployment Architecture
+- [docs](https://docs.ververica.com/v1.3/platform/index.html)
 Is as follows:
 - vvp namespace: 
   - control plane - vervetica/flink components
@@ -37,6 +38,18 @@ Is as follows:
 ## Get started guide/tutorial
 - [Getting Started docs](https://docs.ververica.com/getting_started/index.html)
 - [Getting Started GH: Fork](https://github.com/alex-y-kozlov-sandbox/ververica-platform-playground)
+- [SQL Labs](https://docs.ververica.com/getting_started/sql_development.html)
+
+CREATE TABLE orders (
+  id BIGINT,
+  ordertime TIMESTAMP(3),
+  totalprice DECIMAL(6,2),
+  customerid BIGINT,
+  WATERMARK FOR ordertime AS ordertime
+) WITH (
+  'connector' = 'datagen',
+  'rows-per-second' = '10'
+)
 
 ### Install Promi and Elk for logging
 **Check out custom fluend chart: https://kokuwaio.github.io/helm-charts**
@@ -50,7 +63,7 @@ install_prometheus_operator() {
 
   kubectl --namespace "$JOBS_NAMESPACE" apply -f prometheus-operator-resources/service-monitor.yaml
 }
-install_grafana() {
+install_grafana() {S
   helm_install grafana grafana "$VVP_NAMESPACE" \
     --repo https://grafana.github.io/helm-charts \
     --values values-grafana.yaml \
@@ -87,9 +100,8 @@ helm upgrade --install minio -n vvp --repo https://helm.min.io -f https://raw.gi
 ```
 ### 3. Deploy ververica on K8S - helm chart
 - [docker images docs](https://docs.ververica.com/v1.3/platform/installation/images.html)
-- [helm chart docs]()
-
-- [How to private registry on K8s](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account)
+- [helm chart docs](https://docs.ververica.com/v1.3/platform/installation/helm.html)
+- [How to private registry on K8s](https:/kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account)
 
 Docker registry: registry.platform.data-artisans.net
 Require ` default ` StorageClass defined
@@ -109,7 +121,10 @@ helm template dap -n vvp ververica/ververica-platform -f ververica-helm-dap-valu
 
 # install release daplatform into ververica NS
 helm upgrade --install dap -n vvp -f ververica-helm-dap-values.BROKEN.yaml ververica/ververica-platform
-helm get values dap -n vvp 
+
+helm upgrade --install dap -n vvp -f vvp-values.yaml ververica/ververica-platform
+
+helm get values vvp -n vvp >> /Users/alex.kozlovibm.com/program/repos/sandbox/flink-playgrounds/py-sandbox/ververica/vvp-values.yaml
 
 helm delete dap -n vvp
 
@@ -117,38 +132,3 @@ helm delete dap -n vvp
 kubectl port-forward -n vvp service/vvp-ververica-platform 8080:80
 curl http://.../api/v1/namespaces/defaults/deployments -H "Accept: application/yaml"
 ```
-
-==============
-appmanager
-    volumeMounts:                                                 
-    - mountPath: /vvp/etc                                         
-      name: config                                                
-      readOnly: true                                              
-    - mountPath: /vvp/secrets/blob-storage-creds                  
-      name: blob-storage-creds                                    
-      readOnly: true                                              
-    - mountPath: /vvp/data                                        
-      name: data                                                  
-    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount    
-      name: dap-ververica-platform-token-gg9bh                    
-      readOnly: true   
-    
-gateway
-    volumeMounts:                                                 
-    - mountPath: /vvp/etc                                         
-      name: config                                                
-      readOnly: true                                              
-    - mountPath: /vvp/secrets/blob-storage-creds                  
-      name: blob-storage-creds                                    
-      readOnly: true                                              
-    - mountPath: /vvp/data                                        
-      name: data                                                  
-    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount    
-      name: dap-ververica-platform-token-gg9bh                    
-      readOnly: true     
-    
-ui
-    volumeMounts:                                                  
-    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount    
-      name: dap-ververica-platform-token-gg9bh                    
-      readOnly: true 
