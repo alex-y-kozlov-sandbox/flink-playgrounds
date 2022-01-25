@@ -127,3 +127,8 @@ persistentVolume:
   storageClass: default
   # Subdirectory of the PersistentVolume to use
   subPath: ""
+  
+### Allow Ververica Platform to manage Apache Flink deployments in "vvp-jobs" namespace
+rbac:
+  additionalNamespaces:
+  - vvp-jobs

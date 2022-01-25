@@ -120,7 +120,7 @@ helm template -n vvp ververica/ververica-platform --set acceptCommunityEditionLi
 helm template dap -n vvp ververica/ververica-platform -f ververica-helm-dap-values.yaml >> ververica-helm-dap-tmpl.yaml
 
 # install release daplatform into ververica NS
-helm upgrade --install dap -n vvp -f ververica-helm-dap-values.BROKEN.yaml ververica/ververica-platform
+helm upgrade --install dap -n vvp -f ververica-helm-dap-values.yaml ververica/ververica-platform
 
 helm upgrade --install dap -n vvp -f vvp-values.yaml ververica/ververica-platform
 
