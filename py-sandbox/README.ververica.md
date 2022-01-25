@@ -1,3 +1,67 @@
+# Samples
+
+## SQL Tables
+
+```sql
+select * from payment_msg;
+select * from my_table;
+
+ALTER TABLE `vvp`.`default`.`payment_msg` SET(
+  -- 'connector.properties.bootstrap.servers' = '10.0.220.144:9092',
+  -- 'connector.properties.group.id' = 'test_3',
+  -- 'connector.startup-mode' = 'latest-offset',
+  -- 'connector.topic' = 'payment_msg',
+  -- 'connector.type' = 'kafka',
+  -- 'connector.version' = 'universal',
+  -- 'format.type' = 'json'
+);
+
+CREATE TABLE pm2 (
+  `coll` STRING
+)
+-- Free text comment
+CREATE TABLE pm2 (
+  coll STRING
+    ,createTime VARCHAR
+    ,orderId BIGINT
+    ,payAmount DOUBLE
+    ,payPlatform INT
+    ,provinceId INT
+)
+-- Free text comment
+COMMENT ''
+WITH (
+  -- See https://docs.ververica.com/user_guide/sql_development/connectors.html#apache-kafka
+  'connector' = 'kafka'
+  ,'properties.bootstrap.servers' = 'aiops-kafka-bootstrap.kafka.svc:9092'
+  ,'topic' = 'payment_msg'
+  ,'properties.group.id' = 'test_4' -- Required
+  ,'format' = 'json'
+  ,'scan.startup.mode' = 'earliest-offset' -- Startup mode for Kafka consumer.
+
+);
+
+select * from pm2;
+drop table pm2;
+-- ======
+
+CREATE TABLE KafkaTable (
+  `user_id` BIGINT,
+  `item_id` BIGINT,
+  `behavior` STRING,
+  `ts` TIMESTAMP(3) METADATA FROM 'timestamp'
+) WITH (
+  'connector' = 'kafka',
+  'topic' = 'user_behavior',
+  'properties.bootstrap.servers' = 'localhost:9092',
+  'properties.group.id' = 'testGroup',
+  'scan.startup.mode' = 'earliest-offset',
+  'format' = 'csv'
+)
+```
+
+## Everything
+
 4. run producer and consumer on topic1 in CLI mode:
 ```sh
 # Producer:
