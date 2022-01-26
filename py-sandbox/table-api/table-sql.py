@@ -3,7 +3,7 @@ from pyflink.table import (
     CsvTableSource, CsvTableSink, WriteMode
 )
 
-base_path='~/program/repos/sandbox/flink-playgrounds/py-sandbox/table-api'
+base_path='/Users/kozlova/program/repos/sandbox/flink-playgrounds/py-sandbox/table-api'
 # base_path='/opt/table-api'
 
 def main():

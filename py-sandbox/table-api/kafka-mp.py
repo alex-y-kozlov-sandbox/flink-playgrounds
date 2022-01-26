@@ -25,7 +25,7 @@ from pyflink.table.udf import udf
 
 provinces = ("Beijing", "Shanghai", "Hangzhou", "Shenzhen", "Jiangxi", "Chongqing", "Xizang")
 
-base_path='~/program/repos/sandbox/flink-playgrounds/py-sandbox/table-api'
+base_path='/Users/kozlova/program/repos/sandbox/flink-playgrounds/py-sandbox/table-api'
 # base_path='/opt/table-api'
 
 @udf(input_types=[DataTypes.STRING()], result_type=DataTypes.STRING())
@@ -34,13 +34,19 @@ def province_id_to_name(id):
 
 
 def log_processing():
-    #env_settings = StreamExecutionEnvironment.new_instance()\
-    env_settings = EnvironmentSettings.new_instance()\
-                        .in_batch_mode()\
-                        .use_blink_planner()\
-                        .build()
+    # 1. create a TableEnvironment
+    env_settings = EnvironmentSettings.in_streaming_mode()
+
+    #env_settings = EnvironmentSettings.new_instance()\
+    #                    .in_batch_mode()\
+    #                    .use_blink_planner()\
+    #                    .build()
+
     tbl_env = TableEnvironment.create(env_settings)
     tbl_env.get_config().get_configuration().set_boolean("python.fn-execution.memory.managed", True)
+    tbl_env.get_config().get_configuration().set_string("pipeline.jars", "file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-sql-connector-kafka_2.11-1.14.3.jar")
+    #tbl_env.get_config().get_configuration().set_string("pipeline.jars", "file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-sql-connector-kafka_2.11-1.14.3.jar;file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-connector-kafka_2.11-1.14.3.jar")
+    #tbl_env.get_config().get_configuration().set_string("pipeline.classpaths", "file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-sql-connector-kafka_2.11-1.14.3.jar;file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-connector-kafka_2.11-1.14.3.jar")
 
     create_kafka_source_ddl = """
             CREATE TABLE payment_msg(
@@ -54,8 +60,8 @@ def log_processing():
                 ,'topic' = 'payment_msg'
                 ,'properties.bootstrap.servers' = 'bootstrap.kafka.20.42.24.68.nip.io:9094'
                 ,'properties.security.protocol' = 'SSL'
-                ,'ssl.truststore.password' = 'password'
-                ,'properties.ssl.truststore.location' = '{0}}/config/secrets/truststore.jks'
+                ,'properties.ssl.truststore.password' = 'password'
+                ,'properties.ssl.truststore.location' = '{0}/config/secrets/truststore.jks'
                 ,'properties.group.id' = 'test_5'
                 ,'scan.startup.mode' = 'earliest-offset'
                 ,'format' = 'json'
@@ -80,7 +86,7 @@ def log_processing():
 
     #.select("province_id_to_name(provinceId) as province, payAmount") \
     tbl_env.from_path("payment_msg") \
-        .select("0 as province, payAmount") \
+        .select("'test_province' as province, payAmount") \
         .group_by("province") \
         .select("province, sum(payAmount) as pay_amount") \
         .execute_insert("print_sink")

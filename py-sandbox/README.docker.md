@@ -11,8 +11,9 @@ docker-compose exec jobmanager ./bin/flink run -py /opt/table-api/kafka-pm2.py -
 docker-compose down
 ```
 
+./bin/flink run -py ~/program/repos/sandbox/flink-playgrounds/py-sandbox/table-api/table-api.py -d
 ./bin/flink run -py ~/program/repos/sandbox/flink-playgrounds/py-sandbox/table-api/table-sql.py -d
-./bin/flink run -py /opt/table-api/kafka-pm2.py -d
+./bin/flink run -py /opt/table-api/kafka-mp.py -d
 
 /usr/local/opt/python@3.8/bin/pip3
 /usr/local/opt/python@3.8/bin/python3
