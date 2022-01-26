@@ -21,8 +21,7 @@ CREATE TABLE pm2 (
 )
 -- Free text comment
 CREATE TABLE pm2 (
-  coll STRING
-    ,createTime VARCHAR
+    createTime VARCHAR
     ,orderId BIGINT
     ,payAmount DOUBLE
     ,payPlatform INT
@@ -38,7 +37,6 @@ WITH (
   ,'properties.group.id' = 'test_4' -- Required
   ,'format' = 'json'
   ,'scan.startup.mode' = 'earliest-offset' -- Startup mode for Kafka consumer.
-
 );
 
 select * from pm2;

@@ -1,0 +1,29 @@
+version: '2.1'
+services:
+  jobmanager:
+    build: .
+    image: ghcr.io/alex-y-kozlov-sandbox/pyflink/table-api:1.14.3
+    volumes:
+      - .:/opt/table-api
+    hostname: "jobmanager"
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+  taskmanager:
+    image: ghcr.io/alex-y-kozlov-sandbox/pyflink/table-api:1.14.3
+    volumes:
+    - .:/opt/table-api
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - jobmanager:jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager

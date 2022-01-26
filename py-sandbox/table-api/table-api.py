@@ -14,7 +14,7 @@ def main():
     in_field_names = ['seller_id', 'product', 'quantity', 'product_price', 'sales_date']
     in_field_types = [DataTypes.STRING(), DataTypes.STRING(), DataTypes.INT(), DataTypes.DOUBLE(), DataTypes.DATE()]
     source = CsvTableSource(
-        './data/dental-hygiene-orders.csv',
+        '/opt/table-api/data/dental-hygiene-orders.csv',
         in_field_names,
         in_field_types,
         ignore_first_line=True
@@ -26,7 +26,7 @@ def main():
     sink = CsvTableSink(
         out_field_names,
         out_field_types,
-        './data/revenue.csv',
+        '/opt/table-api/data/revenue.csv',
         num_files=1,
         write_mode=WriteMode.OVERWRITE
     )
