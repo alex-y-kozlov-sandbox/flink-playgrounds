@@ -2,4 +2,6 @@
 **/target
 **/dependency-reduced-pom.xml
 **/*.iml
+**/*.jar
+**/*.zip
 .DS_Store

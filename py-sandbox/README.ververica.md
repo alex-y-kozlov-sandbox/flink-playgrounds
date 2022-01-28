@@ -123,7 +123,7 @@ curl http://.../api/v1/namespaces/defaults/deployments -H "Accept: application/y
 select * from payment_msg;
 select * from my_table;
 
-ALTER TABLE `vvp`.`default`.`payment_msg` SET(
+ALTER TABLE `vvp`.`default`.`payment-msg` SET(
   -- 'connector.properties.bootstrap.servers' = '10.0.220.144:9092',
   -- 'connector.properties.group.id' = 'test_3',
   -- 'connector.startup-mode' = 'latest-offset',
@@ -137,7 +137,7 @@ CREATE TABLE pm2 (
   `coll` STRING
 )
 -- Free text comment
-CREATE TABLE pm2 (
+CREATE TABLE payment_msg (
     createTime VARCHAR
     ,orderId BIGINT
     ,payAmount DOUBLE
@@ -150,11 +150,15 @@ WITH (
   -- See https://docs.ververica.com/user_guide/sql_development/connectors.html#apache-kafka
   'connector' = 'kafka'
   ,'properties.bootstrap.servers' = 'aiops-kafka-bootstrap.kafka.svc:9092'
-  ,'topic' = 'payment_msg'
+  ,'topic' = 'payment-msg'
   ,'properties.group.id' = 'test_4' -- Required
   ,'format' = 'json'
   ,'scan.startup.mode' = 'earliest-offset' -- Startup mode for Kafka consumer.
 );
+
+select count(*) from payment_msg;
+select * from payment_msg;
+drop table payment_msg;
 
 select * from pm2;
 drop table pm2;

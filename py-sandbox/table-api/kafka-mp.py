@@ -17,11 +17,14 @@
 #
 #                 
 ################################################################################
-
+# ./bin/flink run --python /Users/kozlova/program/repos/sandbox/flink-playgrounds/py-sandbox/table-api/kafka-mp.py --jarfile /Users/kozlova/program/repos/sandbox/flink-playgrounds/py-sandbox/table-api/kafka-fat.jar -pyFiles file:///Users/kozlova/program/repos/sandbox/flink-playgrounds/py-sandbox/table-api/config/secrets/truststore.jks
+#
+# http --download https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-kafka_2.12/1.14.3/flink-connector-kafka_2.12-1.14.3.jar
 
 from pyflink.datastream import StreamExecutionEnvironment, TimeCharacteristic
-from pyflink.table import (TableEnvironment, DataTypes, EnvironmentSettings)
+from pyflink.table import (TableEnvironment, DataTypes, StreamTableEnvironment, EnvironmentSettings)
 from pyflink.table.udf import udf
+import os
 
 provinces = ("Beijing", "Shanghai", "Hangzhou", "Shenzhen", "Jiangxi", "Chongqing", "Xizang")
 
@@ -34,19 +37,22 @@ def province_id_to_name(id):
 
 
 def log_processing():
-    # 1. create a TableEnvironment
-    env_settings = EnvironmentSettings.in_streaming_mode()
-
-    #env_settings = EnvironmentSettings.new_instance()\
-    #                    .in_batch_mode()\
-    #                    .use_blink_planner()\
-    #                    .build()
-
-    tbl_env = TableEnvironment.create(env_settings)
-    tbl_env.get_config().get_configuration().set_boolean("python.fn-execution.memory.managed", True)
-    tbl_env.get_config().get_configuration().set_string("pipeline.jars", "file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-sql-connector-kafka_2.11-1.14.3.jar")
-    #tbl_env.get_config().get_configuration().set_string("pipeline.jars", "file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-sql-connector-kafka_2.11-1.14.3.jar;file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-connector-kafka_2.11-1.14.3.jar")
-    #tbl_env.get_config().get_configuration().set_string("pipeline.classpaths", "file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-sql-connector-kafka_2.11-1.14.3.jar;file:///Users/kozlova/Downloads/flink-1.14.3/lib/flink-connector-kafka_2.11-1.14.3.jar")
+    # Create streaming environment
+    env = StreamExecutionEnvironment.get_execution_environment()
+    settings = EnvironmentSettings.new_instance()\
+                      .in_streaming_mode()\
+                      .use_blink_planner()\
+                      .build()
+    # create table environment
+    tbl_env = StreamTableEnvironment.create(stream_execution_environment=env,
+                                            environment_settings=settings)
+    # add kafka connector dependency
+    kafka_jar = os.path.join(base_path,'flink-sql-connector-kafka_2.12-1.14.3.jar')
+    #kafka_jar = './flink-sql-connector-kafka_2.12-1.14.3.jar'
+    tbl_env.get_config()\
+            .get_configuration()\
+            .set_boolean("python.fn-execution.memory.managed", True)#\
+            #.set_string("pipeline.jars", "file://{}".format(kafka_jar))
 
     create_kafka_source_ddl = """
             CREATE TABLE payment_msg(
@@ -58,15 +64,15 @@ def log_processing():
             ) WITH (
                 'connector' = 'kafka'
                 ,'topic' = 'payment_msg'
-                ,'properties.bootstrap.servers' = 'bootstrap.kafka.20.42.24.68.nip.io:9094'
+                ,'properties.bootstrap.servers' = 'bootstrap.kafka.20.42.24.68.nip.io:443'
                 ,'properties.security.protocol' = 'SSL'
                 ,'properties.ssl.truststore.password' = 'password'
-                ,'properties.ssl.truststore.location' = '{0}/config/secrets/truststore.jks'
+                ,'properties.ssl.truststore.location' = 'truststore.jks'
                 ,'properties.group.id' = 'test_5'
                 ,'scan.startup.mode' = 'earliest-offset'
                 ,'format' = 'json'
             )
-            """.format(base_path)
+            """
 
     create_print_sink_ddl = """
         CREATE TABLE print_sink (
